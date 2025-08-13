@@ -24,7 +24,7 @@ Calcular_Distância <- function(Linhas_de_interesse){
   Matriz_distancias <- matrix(0, nrow = n, ncol = n)
   
   for (i in 1:n) {
-    for (j in 1:n) {
+    for (j in i:n) {
       Distância <- sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2 + (z[i] - z[j])**2)
       Matriz_distancias[i, j] <- Distância
     }
@@ -67,4 +67,5 @@ Alterar_BFactor <- function(arquivo_pdb, contatos, valor_bfactor) {
   pdb$atom$b <- pdb_b
   return(pdb)
 }
+
 
