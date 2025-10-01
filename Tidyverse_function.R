@@ -84,7 +84,28 @@ Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
   }
 }
 
-Arquivo_pdb <- read.pdb("C:/Users/Pichau/OneDrive/Documentos/Code/pdbs/7jzm.pdb")
-Arquivo_pdb_padronizado <- Padronizar_pdb(Arquivo_pdb,Limpar_b_factor = TRUE)
+Padronizar_pdb_2 <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
+  pdb_atom <- Arquivo_pdb$atom
+  
+  cadeias <- unique(pdb_atom$chain)
+  pdb_atom$chain <- LETTERS[match(pdb_atom$chain, cadeias)]
+  
+  identificadores <- paste(pdb_atom$chain, pdb_atom$resno)
+  novos_resnos<- match(identificadores, unique(identificadores))   
+  pdb_atom$resno <- novos_resnos
+  
+  if (isTRUE(Limpar_Bfactor)) {
+    pdb_atom$b <- 0
+  }
+
+  Arquivo_pdb$atom <- pdb_atom
+  return(Arquivo_pdb)
+}
+
+
+Arquivo_pdb <- read.pdb("C:/Code/pdbs/egfr_cetuximabe.pdb")
+Arquivo_pdb_padronizado_2 <- Padronizar_pdb_2(Arquivo_pdb,TRUE)
+atom <- Arquivo_pdb_padronizado_2$atom
 pdb_CA <- Processamento_pdb(Arquivo_pdb = Arquivo_pdb_padronizado,Interesse = 'CA',Operação = 'Contato')
 
+write.pdb(pdb = Arquivo_pdb_padronizado_2, file = "C:/Code/pdbs/EGFR_Padronizado")
