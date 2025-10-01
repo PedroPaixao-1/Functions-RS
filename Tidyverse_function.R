@@ -1,3 +1,4 @@
+library("reticulate")
 library("bio3d")
 library("dplyr")
 library("readr")
@@ -21,7 +22,7 @@ Calcular_Distância <- function(Interesse){
   return(Matriz_distancias)
 }
 
-Calcular_Contato <- function(Matriz_distância, Distância_contato) {
+Calcular_Contato <- function(Matriz_distância) {
   Matriz_ct <- ifelse(Matriz_distância <= 8,1,0) 
   return(Matriz_ct)
 } 
@@ -46,37 +47,23 @@ Indices_Contato <- function(pdb_atom,Matriz_ct) {
   return(Indices)
 }
 
-Padronizar_pdb <- function(Arquivo_pdb,Limpar_b_factor){
-  pdb_atom <- Arquivo_pdb$atom
-  
-#Separa as cadeias para o futuro
-  Cadeia_A <- pdb_atom %>% filter(chain == "A")
-  Cadeia_B <- pdb_atom %>% filter(chain != "A")
-  
-#Renomeia a segunda cadeia para B caso não seja nomeada como B
-  pdb_atom <- pdb_atom %>%
-    mutate(chain = if_else(chain == "A", "A", "B")) #if_else é uma forma de conjugar if e else 
-  
-#Calcula os min dos resnos das cadeias
-  min_res_A <- min(Cadeia_A$resno)
-  min_res_B <- min(Cadeia_B$resno)
-  
-#Faz a porcaria do cálculo maldito pra definir o máximo já que por algum motivo length(unique()) não estava funcionando
-  len_A <- max(Cadeia_A$resno - min_res_A + 1)
-  
-#Muda os resnos
-  pdb_atom <- pdb_atom %>%
-    mutate(resno = case_when(
-      chain == "A" ~ resno - min_res_A + 1,
-      chain == "B" ~ resno - min_res_B + 1 + len_A
-    ))
-  
-#Muda o b facotr de todos os átomos para 0
-  if (Limpar_b_factor == TRUE){pdb_atom <- pdb_atom %>%
-    mutate(b = 0)} 
-  
-  return(pdb_atom)
+Randomizar_posicao <- function(Contatos_unicos){
+  Posicao <- sample(Contatos_unicos, size = ceiling(20/100*length(Contatos_unicos)))
+  return(Posicao)
 }
+
+Chamar_python <- function(Sequencia,Posicao){
+  use_condaenv("esm2-env")
+  Texto <- paste("python3 /home/pedro.paixao/Code/mutation_esm2.py --sequence",Sequencia,"--position",Posicao,"--temperature 2.0")
+  system(Texto)
+  saida <- readLines("completed_sequence.txt")
+  return(saida)
+}
+  
+Rodar_psypred <- function(){
+  
+}
+#Funções compiladas
 
 Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
 
@@ -95,12 +82,32 @@ Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
     Matriz_dist <- Calcular_Distância(Resid_filtrados)
     return(Matriz_dist)
   } else if (Operação == 'Contato'){
-    Distância_contato <- 8
     Matriz <- Calcular_Distância(Resid_filtrados)
-    Contato <- Calcular_Contato(Matriz_dist = Matriz,Distância_contato)
-    return(Contato)
+    Contato <- Calcular_Contato(Matriz_dist = Matriz)
+    Resid_Ct <- Indices_Contato(Arquivo_pdb,Contato)
+    Contatos_unicos <- as.list(unique(Resid_Ct[,1]))
+    return(Contatos_unicos)
   }
 }
 
+Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
+  pdb_atom <- Arquivo_pdb$atom
+  
+  cadeias <- unique(pdb_atom$chain)
+  pdb_atom$chain <- LETTERS[match(pdb_atom$chain, cadeias)]
+  
+  identificadores <- paste(pdb_atom$chain, pdb_atom$resno)
+  novos_resnos<- match(identificadores, unique(identificadores))   
+  pdb_atom$resno <- novos_resnos
+  
+  if (isTRUE(Limpar_Bfactor)) {
+    pdb_atom$b <- 0
+  }
 
+  Arquivo_pdb$atom <- pdb_atom
+  return(Arquivo_pdb)
+}
 
+Pipeline_mutação <- function(){
+  
+}
