@@ -101,11 +101,3 @@ Padronizar_pdb_2 <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
   Arquivo_pdb$atom <- pdb_atom
   return(Arquivo_pdb)
 }
-
-
-Arquivo_pdb <- read.pdb("C:/Code/pdbs/egfr_cetuximabe.pdb")
-Arquivo_pdb_padronizado_2 <- Padronizar_pdb_2(Arquivo_pdb,TRUE)
-atom <- Arquivo_pdb_padronizado_2$atom
-pdb_CA <- Processamento_pdb(Arquivo_pdb = Arquivo_pdb_padronizado,Interesse = 'CA',Operação = 'Contato')
-
-write.pdb(pdb = Arquivo_pdb_padronizado_2, file = "C:/Code/pdbs/EGFR_Padronizado")
