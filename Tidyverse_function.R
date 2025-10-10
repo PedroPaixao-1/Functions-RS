@@ -49,16 +49,27 @@ Indices_Contato <- function(pdb_atom,Matriz_ct) {
 
 Randomizar_posicao <- function(Contatos_unicos){
   Posicao <- sample(Contatos_unicos, size = ceiling(20/100*length(Contatos_unicos)))
-  return(Posicao)
+  return(unlist(Posicao))
 }
 
-Chamar_python <- function(Sequencia,Posicao){
-  use_condaenv("esm2-env")
-  Texto <- paste("python3 /home/pedro.paixao/Code/mutation_esm2.py --sequence",Sequencia,"--position",Posicao,"--temperature 2.0")
-  system(Texto)
+Chamar_python <- function(Sequencia, Posicao, Temperatura) {
+  # Caminho completo do Python do ambiente
+  Texto <- paste(
+    "/home/pedro.paixao/anaconda3/condabin/conda run -n esm2-env",
+    "python /home/pedro.paixao/Code/generate_sequence_esm2.py",
+    "--sequence", Sequencia,
+    "--position", Posicao,
+    "--temperature", Temperatura
+  )
+  
+  # Executa o script Python dentro do ambiente correto
+  system(Texto, wait = TRUE)
+  
+  # Lê o resultado
   saida <- readLines("completed_sequence.txt")
   return(saida)
 }
+
   
 Rodar_psypred <- function(){
   
@@ -108,6 +119,14 @@ Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
   return(Arquivo_pdb)
 }
 
-Pipeline_mutação <- function(){
-  
+Pipeline_mutação <- function(Sequencia,Contatos,Loops){
+ Variantes <- vector("list",Loops) 
+    for (i in 1:Loops){
+    Seq <- paste(Sequencia, collapse = "")
+    Posicoes <- Randomizar_posicao(Contatos)
+    Variantes[[i]] <- Chamar_python(Sequencia = Seq, Posicao = Posicoes, Temperatura = 1.5)
+ } 
+ return(Variantes)
 }
+  
+
