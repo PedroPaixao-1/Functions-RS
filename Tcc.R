@@ -11,6 +11,7 @@ seq <- pdbseq(Arquivo_pdb_padronizado)
 seq_A <- seq[1:613]
 
 Teste <- Pipeline_mutação(seq_A,Contatos,10)
+cat(Teste[[1]])
 
 
 

@@ -121,12 +121,15 @@ Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
 
 Pipeline_mutação <- function(Sequencia,Contatos,Loops){
  Variantes <- vector("list",Loops) 
+ MULTIFASTA <- vector("list",Loops) 
     for (i in 1:Loops){
     Seq <- paste(Sequencia, collapse = "")
     Posicoes <- Randomizar_posicao(Contatos)
     Variantes[[i]] <- Chamar_python(Sequencia = Seq, Posicao = Posicoes, Temperatura = 1.5)
- } 
- return(Variantes)
+    } 
+  for (i in 1:Loops){
+    Header <- paste(">EGFR|CHAIN A|Variante",i)
+    MULTIFASTA[[i]] <- paste(Header,Variantes[i], sep = "\n")
+  }
+ return(MULTIFASTA)
 }
-  
-
