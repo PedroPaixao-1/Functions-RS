@@ -72,7 +72,7 @@ Chamar_python <- function(Sequencia, Posicao, Temperatura) {
 
   
 Rodar_psypred <- function(){
-  
+  Texto <- paste()
 }
 #Funções compiladas
 
@@ -131,5 +131,13 @@ Pipeline_mutação <- function(Sequencia,Contatos,Loops){
     Header <- paste(">EGFR|CHAIN A|Variante",i)
     MULTIFASTA[[i]] <- paste(Header,Variantes[i], sep = "\n")
   }
- return(MULTIFASTA)
+  arquivo_fasta <- file("Variantes.fasta","w")
+  for (linha in MULTIFASTA) {
+    linha <- gsub("\\\\n", "\n", linha)
+    cat(linha, "\n", file = arquivo_fasta)
+  }
+  close(arquivo_fasta)
+  
+  message("MULTIFASTA CRIADO")
+  return(MULTIFASTA)
 }
