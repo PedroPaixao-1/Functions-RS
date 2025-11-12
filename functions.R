@@ -1,11 +1,23 @@
-#----------------------Funções Primárias-------------------------------------
 
 info_resid <- function(Lista_resid,Arquivo_pdb){
   pdb <- read.pdb(Arquivo_pdb)
   pdb_atom <- pdb$atom
-  Selecionados <- atom.select(pdb = pdb, resno = lista_resid)
+  Selecionados <- atom.select(pdb = pdb, resno = Lista_resid)
   Selecionados_linhas <- pdb_atom[selecionados$atom, ]
   return(selecionados_linhas)
+}
+Processamento_pdb <- function(Arquivo_pdb,Lista_resid,Operação){
+  pdb <- read.pdb(Arquivo_pdb)
+  pdb_atom <- pdb$atom
+  Interesse <- atom.select(pdb = pdb, resno = Lista_resid)
+  Linhas_de_interesse <- pdb_atom[Interesse$atom, ]
+  
+   if (Operação == 0) {
+    return(Linhas_de_interesse)
+  } else if (Operação == 1) {
+   Matriz_Distância <- Calcular_Distância(Linhas_de_interesse)
+   return(Matriz_Distância)
+  } 
 }
 
 Centro_massa <- function(Linhas_de_interesse){
@@ -24,7 +36,7 @@ Calcular_Distância <- function(Linhas_de_interesse){
   Matriz_distancias <- matrix(0, nrow = n, ncol = n)
   
   for (i in 1:n) {
-    for (j in i:n) {
+    for (j in 1:n) {
       Distância <- sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2 + (z[i] - z[j])**2)
       Matriz_distancias[i, j] <- Distância
     }
@@ -54,10 +66,8 @@ Calcular_Contato <- function(Matriz_distância, Distância_contato) {
   return(contato)
 }
 
-Alterar_BFactor <- function(arquivo_pdb, contatos, valor_bfactor) {
-  pdb <- read.pdb(arquivo_pdb)
-  pdb_b <- pdb$atom$b
-  
+Alterar_BFactor <- function(Arquivo_pdb, Contatos, Valor_bfactor) {
+
   for (i in seq_along(contatos)) {
     if (length(contatos[[i]]) > 0) {
       pdb_b[i] <- valor_bfactor
@@ -67,5 +77,4 @@ Alterar_BFactor <- function(arquivo_pdb, contatos, valor_bfactor) {
   pdb$atom$b <- pdb_b
   return(pdb)
 }
-
 

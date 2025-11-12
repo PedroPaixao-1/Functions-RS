@@ -53,7 +53,7 @@ Randomizar_posicao <- function(Contatos_unicos){
 }
 
 Chamar_python <- function(Sequencia, Posicao, Temperatura) {
-  # Caminho completo do Python do ambiente
+
   Texto <- paste(
     "/home/pedro.paixao/anaconda3/condabin/conda run -n esm2-env",
     "python /home/pedro.paixao/Code/generate_sequence_esm2.py",
@@ -62,18 +62,22 @@ Chamar_python <- function(Sequencia, Posicao, Temperatura) {
     "--temperature", Temperatura
   )
   
-  # Executa o script Python dentro do ambiente correto
+ 
   system(Texto, wait = TRUE)
-  
-  # Lê o resultado
+
   saida <- readLines("completed_sequence.txt")
-  return(saida)
+  
 }
 
   
-Rodar_psypred <- function(){
-  Texto <- paste()
+Rodar_psypred <- function(arquivo_fasta){
+  Variantes.fasta <- arquivo_fasta 
+  Texto <- paste("python s4pred-main/run_model.py", Variantes.fasta, "> predSec.ss2")
+  system(Texto, wait = TRUE)
+  predSec <- file("/home/pedro.paixao/predSec.ss2")
+  return(predSec)
 }
+
 #Funções compiladas
 
 Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
@@ -101,7 +105,7 @@ Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
   }
 }
 
-Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE) {
+Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE){
   pdb_atom <- Arquivo_pdb$atom
   
   cadeias <- unique(pdb_atom$chain)
@@ -137,7 +141,6 @@ Pipeline_mutação <- function(Sequencia,Contatos,Loops){
     cat(linha, "\n", file = arquivo_fasta)
   }
   close(arquivo_fasta)
-  
-  message("MULTIFASTA CRIADO")
   return(MULTIFASTA)
 }
+
