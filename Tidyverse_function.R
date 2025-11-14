@@ -2,6 +2,8 @@ library("reticulate")
 library("bio3d")
 library("dplyr")
 library("readr")
+library("seqinr")
+
 #Funções Operacionais
 
 Calcular_Distância <- function(Interesse){
@@ -69,14 +71,33 @@ Chamar_python <- function(Sequencia, Posicao, Temperatura) {
   
 }
 
-  
 Rodar_psypred <- function(arquivo_fasta){
+  
   Variantes.fasta <- arquivo_fasta 
-  Texto <- paste("python s4pred-main/run_model.py", Variantes.fasta, "> predSec.ss2")
+  #esqueminha pra rodar no sistema
+  Texto <- paste(" python s4pred-main/run_model.py -t fas -x -z",
+                 Variantes.fasta,
+                 "> predSec.fas")
   system(Texto, wait = TRUE)
-  predSec <- file("/home/pedro.paixao/predSec.ss2")
-  return(predSec)
+  #pega as preds
+  Arquivos_pred <- list.files(
+    "/home/pedro.paixao/s4pred-main/preds",
+    pattern = "\\.fas$",
+    full.names = TRUE
+  )
+  #lê as preds
+  Dados <- lapply(Arquivos_pred, read.fasta)
+  
+  #corta a sequência
+  Dados <- lapply(Dados, function(x) {
+    seq <- x[[1]]                      
+    seq <- seq[-(1:613)]              
+    paste(seq, collapse = "") 
+  })
+  return(Dados)
 }
+
+Comparar_predSecs <- function()
 
 #Funções compiladas
 
@@ -126,6 +147,8 @@ Padronizar_pdb <- function(Arquivo_pdb, Limpar_Bfactor = TRUE){
 Pipeline_mutação <- function(Sequencia,Contatos,Loops){
  Variantes <- vector("list",Loops) 
  MULTIFASTA <- vector("list",Loops) 
+ EGFR_fasta <- read.fasta("/home/pedro.paixao/Code/EGFR.fasta")
+ 
     for (i in 1:Loops){
     Seq <- paste(Sequencia, collapse = "")
     Posicoes <- Randomizar_posicao(Contatos)
@@ -141,6 +164,9 @@ Pipeline_mutação <- function(Sequencia,Contatos,Loops){
     cat(linha, "\n", file = arquivo_fasta)
   }
   close(arquivo_fasta)
-  return(MULTIFASTA)
-}
+  
+  predSec <- Rodar_psypred(arquivo_fasta)
+  
 
+  
+}

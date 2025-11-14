@@ -9,6 +9,15 @@ Contatos <- Processamento_pdb(Pdb_atom_padronizado,Interesse = 'CA', Operação 
 
 seq <- pdbseq(Arquivo_pdb_padronizado)
 seq_A <- seq[1:613]
-
+Seq_A <- paste(seq_A, collapse = "")
 
 Teste <- Pipeline_mutação(seq_A,Contatos,10)
+
+seq <- readLines("completed_sequence.txt")
+writeLines(
+  c(">EGFR", seq),
+  "EGFR.fasta"
+)
+
+
+
