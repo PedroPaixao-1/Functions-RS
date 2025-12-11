@@ -29,10 +29,10 @@ Calcular_Contato <- function(Matriz_distância) {
   return(Matriz_ct)
 } 
 
-Indices_Contato <- function(pdb_atom,Matriz_ct) {
+Indices_Contato <- function(pdb,Matriz_ct) {
   #Separa as cadeias para o futuro
-  Cadeia_A <- pdb_atom %>% filter(chain == "A")
-  Cadeia_B <- pdb_atom %>% filter(chain != "A")
+  Cadeia_A <- pdb$atom %>% filter(chain == "A")
+  Cadeia_B <- pdb$atom %>% filter(chain != "A")
   
   #Calcula os min dos resnos das cadeias
   max_res_A <- max(Cadeia_A$resno)
@@ -76,8 +76,7 @@ Rodar_psypred <- function(arquivo_fasta){
   Variantes.fasta <- arquivo_fasta 
   #esqueminha pra rodar no sistema
   Texto <- paste(" python s4pred-main/run_model.py -t fas -x -z",
-                 Variantes.fasta,
-                 "> predSec.fas")
+                 Variantes.fasta)
   system(Texto, wait = TRUE)
   #pega as preds
   Arquivos_pred <- list.files(
@@ -88,12 +87,6 @@ Rodar_psypred <- function(arquivo_fasta){
   #lê as preds
   Dados <- lapply(Arquivos_pred, read.fasta)
   
-  #corta a sequência
-  Dados <- lapply(Dados, function(x) {
-    seq <- x[[1]]                      
-    seq <- seq[-(1:613)]              
-    paste(seq, collapse = "") 
-  })
   return(Dados)
 }
 
@@ -105,11 +98,9 @@ Processamento_pdb <- function(Arquivo_pdb,Interesse,Operação){
 
   #Filtra as linhas de interesse através do seu elety ou resno
   if (is.character(Interesse)) {
-    Resid_filtrados <- Arquivo_pdb %>%
-      filter(elety == Interesse)
+    Resid_filtrados <- filter(Arquivo_pdb$atom,elety == Interesse)
   } else {
-    Resid_filtrados <- Arquivo_pdb %>%
-      filter(resno == Interesse)
+    Resid_filtrados <- Resid_filtrados <- Arquivo_pdb$atom[Arquivo_pdb$atom$resno %in% Interesse, ]
   }
   
   if (Operação == 'Filtrar'){
